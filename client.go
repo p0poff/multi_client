@@ -4,22 +4,17 @@ import (
 	"fmt"
 )
 
-type request struct {
-	url     string
-	method  string
-	body    string
-	headers map[string]string
-}
+var rs Requests
+var res Responses
 
-type requests []request
-
-func (r *requests) add(r2 request) {
-	*r = append(*r, r2)
+func start() {
+	rs = Requests{}
+	res = Responses{}
 }
 
 func main() {
 	fmt.Println("Hello, World!")
-	r := request{
+	r := Request{
 		url:    "http://localhost:8080",
 		method: "GET",
 		body:   "",
@@ -28,10 +23,14 @@ func main() {
 		},
 	}
 
-	rs := requests{}
+	start()
 	rs.add(r)
 	rs.add(r)
 	rs.add(r)
 
+	fmt.Println(rs)
+
+	start()
+	rs.add(r)
 	fmt.Println(rs)
 }
