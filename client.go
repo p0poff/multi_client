@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -12,25 +13,35 @@ func start() {
 	res = Responses{}
 }
 
-func main() {
-	fmt.Println("Hello, World!")
-	r := Request{
-		url:    "http://localhost:8080",
-		method: "GET",
-		body:   "",
-		headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+func addRequest(url string, method string, body string, headers_json string) bool {
+	headers := map[string]string{}
+	err := json.Unmarshal([]byte(headers_json), &headers)
+
+	if err != nil {
+		return false
 	}
 
+	r := Request{
+		url:     url,
+		method:  method,
+		body:    body,
+		headers: headers,
+	}
+	rs.add(r)
+
+	return true
+}
+
+func main() {
+	fmt.Println("Hello, World!")
+
 	start()
-	rs.add(r)
-	rs.add(r)
-	rs.add(r)
+	addRequest("http://localhost:8080", "GET", "1", `{"Content-Type": "application/json"}`)
+	addRequest("http://localhost:8080", "GET", "2", `{"Content-Type": "application/json"}`)
 
 	fmt.Println(rs)
 
 	start()
-	rs.add(r)
+	addRequest("http://localhost:8080", "GET", "pop", `{"Content-Type": "application/json"}`)
 	fmt.Println(rs)
 }
