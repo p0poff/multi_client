@@ -3,14 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 )
 
 var rs Requests
 var res Responses
+var mu sync.Mutex
 
 func start() {
-	rs = Requests{}
-	res = Responses{}
+	rs.clear()
+	res.clear()
 }
 
 func addRequest(url string, method string, body string, headers_json string) bool {
@@ -32,16 +34,45 @@ func addRequest(url string, method string, body string, headers_json string) boo
 	return true
 }
 
+func send() {
+	var wg sync.WaitGroup
+	for _, r := range rs {
+		wg.Add(1)
+		go func(r Request) {
+			defer wg.Done()
+			resp := r.send()
+
+			// Безопасно добавляем ответ в глобальную переменную res
+			mu.Lock()
+			res.add(resp)
+			mu.Unlock()
+		}(r)
+	}
+
+	wg.Wait()
+}
+
 func main() {
 	fmt.Println("Hello, World!")
 
 	start()
-	addRequest("http://localhost:8080", "GET", "1", `{"Content-Type": "application/json"}`)
-	addRequest("http://localhost:8080", "GET", "2", `{"Content-Type": "application/json"}`)
 
-	fmt.Println(rs)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
 
-	start()
-	addRequest("http://localhost:8080", "GET", "pop", `{"Content-Type": "application/json"}`)
-	fmt.Println(rs)
+	send()
+
+	// Выводим результаты
+	fmt.Printf("Responses count: %d\n", len(res))
+	for i, response := range res {
+		fmt.Printf("Response %d: Status Code %d, Body: %s\n", i+1, response.statusCode, response.body)
+		fmt.Println(response.headers)
+	}
 }
