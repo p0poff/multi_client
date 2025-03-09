@@ -112,3 +112,15 @@ func (r *Response) get_json() string {
 	}
 	return string(json)
 }
+
+func (r *Responses) get_json() string {
+	jrs := make([]Response, len(*r))
+	for i, resp := range *r {
+		jrs[i] = resp
+	}
+	json, err := json.Marshal(jrs)
+	if err != nil {
+		return fmt.Sprintf("Error marshaling responses: %v", err)
+	}
+	return string(json)
+}

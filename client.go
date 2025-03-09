@@ -1,5 +1,9 @@
 package main
 
+/*
+#include <stdlib.h>
+*/
+import "C"
 import (
 	"encoding/json"
 	"fmt"
@@ -10,11 +14,13 @@ var rs Requests
 var res Responses
 var mu sync.Mutex
 
+//export start
 func start() {
 	rs.clear()
 	res.clear()
 }
 
+//export addRequest
 func addRequest(id int, url string, method string, body string, headers_json string) bool {
 	headers := map[string]string{}
 	err := json.Unmarshal([]byte(headers_json), &headers)
@@ -35,6 +41,7 @@ func addRequest(id int, url string, method string, body string, headers_json str
 	return true
 }
 
+//export send
 func send() {
 	var wg sync.WaitGroup
 	for _, r := range rs {
@@ -51,6 +58,11 @@ func send() {
 	}
 
 	wg.Wait()
+}
+
+//export getResponses
+func getResponses() string {
+	return res.get_json()
 }
 
 func main() {
@@ -73,8 +85,7 @@ func main() {
 
 	// Выводим результаты
 	fmt.Printf("Responses count: %d\n", len(res))
-	for _, response := range res {
-		fmt.Printf("Response %d: json: %s\n", response.Id, response.get_json())
-		fmt.Println(response.Headers)
-	}
+
+	fmt.Printf("Responses: %s\n", getResponses())
+
 }
