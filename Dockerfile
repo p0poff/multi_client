@@ -8,6 +8,6 @@ ADD client.go /build
 ADD struct.go /build
 ADD go.mod /build
 
-RUN CGO_ENABLED=1 go build -o multi_client.so -buildmode=c-shared client.go struct.go
+RUN CGO_ENABLED=1 go build -buildmode=c-shared -o multi_client.so -ldflags '-w' client.go struct.go
 
 CMD ["sh"]

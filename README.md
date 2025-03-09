@@ -14,3 +14,5 @@ docker run -it multi_client
 
 docker-compose exec php-fpm apk add --no-cache gcc libc-dev
 docker-compose exec php-fpm gcc -o /var/www/html/storage/app/temp/test_lib /var/www/html/storage/app/temp/multi.c -ldl
+
+docker-compose exec php-fpm chmod 777 /var/www/html/storage/app/temp/multi_client.so

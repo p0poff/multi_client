@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"unsafe"
+	// "unsafe"
 )
 
 var rs Requests
@@ -20,16 +20,24 @@ var ptrStore sync.Map
 func start() {
 	rs.clear()
 	res.clear()
-	freeAll()
+	// freeAll()
 }
 
-func freeAll() {
-	ptrStore.Range(func(key, value interface{}) bool {
-		C.free(unsafe.Pointer(key.(*C.char))) // Освобождаем память
-		ptrStore.Delete(key)                  // Удаляем из карты
-		return true
-	})
-}
+// func freeAll() {
+// 	ptrStore.Range(func(key, value interface{}) bool {
+// 		// Вместо C.free используем обертку
+// 		ptr := unsafe.Pointer(key.(*C.char))
+// 		// Обертка функции free внутри кода Go
+// 		freePtr(ptr)
+// 		ptrStore.Delete(key)
+// 		return true
+// 	})
+// }
+
+// Создаем локальную функцию вместо экспортированной C-функции
+// func freePtr(ptr unsafe.Pointer) {
+// 	C.free(ptr)
+// }
 
 //export addRequest
 func addRequest(id int, url *C.char, method *C.char, body *C.char, headers_json *C.char) bool {
@@ -61,7 +69,6 @@ func send() {
 			defer wg.Done()
 			resp := r.send()
 
-			// Безопасно добавляем ответ в глобальную переменную res
 			mu.Lock()
 			res.add(resp)
 			mu.Unlock()
@@ -74,7 +81,7 @@ func send() {
 //export getResponsesJson
 func getResponsesJson() *C.char {
 	cStr := C.CString(res.get_json())
-	ptrStore.Store(cStr, struct{}{})
+	// ptrStore.Store(cStr, struct{}{})
 
 	return cStr
 }
@@ -83,23 +90,4 @@ func main() {
 	fmt.Println("Hello, World!")
 
 	start()
-
-	// addRequest(1, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(2, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(3, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(4, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(5, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(6, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(7, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(8, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(9, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	// addRequest(0, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-
-	send()
-
-	// Выводим результаты
-	fmt.Printf("Responses count: %d\n", len(res))
-
-	fmt.Printf("Responses: %s\n", getResponsesJson())
-
 }
