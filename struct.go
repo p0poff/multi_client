@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 )
 
 type Request struct {
+	id      int
 	url     string
 	method  string
 	body    string
@@ -16,9 +18,10 @@ type Request struct {
 }
 
 type Response struct {
-	statusCode int
-	body       string
-	headers    map[string]string
+	Id         int               `json:"id"`
+	StatusCode int               `json:"status_code"`
+	Body       string            `json:"body"`
+	Headers    map[string]string `json:"headers"`
 }
 
 type Requests []Request
@@ -50,9 +53,10 @@ func (r *Request) send() Response {
 	req, err := http.NewRequest(r.method, r.url, strings.NewReader(r.body))
 	if err != nil {
 		return Response{
-			statusCode: 0,
-			body:       fmt.Sprintf("Error creating request: %v", err),
-			headers:    map[string]string{},
+			Id:         r.id,
+			StatusCode: 0,
+			Body:       fmt.Sprintf("Error creating request: %v", err),
+			Headers:    map[string]string{},
 		}
 	}
 
@@ -65,9 +69,10 @@ func (r *Request) send() Response {
 	resp, err := client.Do(req)
 	if err != nil {
 		return Response{
-			statusCode: 0,
-			body:       fmt.Sprintf("Error sending request: %v", err),
-			headers:    map[string]string{},
+			Id:         r.id,
+			StatusCode: 0,
+			Body:       fmt.Sprintf("Error sending request: %v", err),
+			Headers:    map[string]string{},
 		}
 	}
 	defer resp.Body.Close()
@@ -76,9 +81,10 @@ func (r *Request) send() Response {
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return Response{
-			statusCode: resp.StatusCode,
-			body:       fmt.Sprintf("Error reading response body: %v", err),
-			headers:    map[string]string{},
+			Id:         r.id,
+			StatusCode: resp.StatusCode,
+			Body:       fmt.Sprintf("Error reading response body: %v", err),
+			Headers:    map[string]string{},
 		}
 	}
 
@@ -92,8 +98,17 @@ func (r *Request) send() Response {
 
 	// Возвращаем Response
 	return Response{
-		statusCode: resp.StatusCode,
-		body:       string(respBody),
-		headers:    respHeaders,
+		Id:         r.id,
+		StatusCode: resp.StatusCode,
+		Body:       string(respBody),
+		Headers:    respHeaders,
 	}
+}
+
+func (r *Response) get_json() string {
+	json, err := json.Marshal(r)
+	if err != nil {
+		return fmt.Sprintf("Error marshaling response: %v", err)
+	}
+	return string(json)
 }

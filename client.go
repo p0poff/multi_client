@@ -15,7 +15,7 @@ func start() {
 	res.clear()
 }
 
-func addRequest(url string, method string, body string, headers_json string) bool {
+func addRequest(id int, url string, method string, body string, headers_json string) bool {
 	headers := map[string]string{}
 	err := json.Unmarshal([]byte(headers_json), &headers)
 
@@ -24,6 +24,7 @@ func addRequest(url string, method string, body string, headers_json string) boo
 	}
 
 	r := Request{
+		id:      id,
 		url:     url,
 		method:  method,
 		body:    body,
@@ -57,22 +58,23 @@ func main() {
 
 	start()
 
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
-	addRequest("https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(1, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(2, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(3, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(4, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(5, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(6, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(7, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(8, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(9, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
+	addRequest(0, "https://httpbin.org/delay/2", "GET", "{}", `{"Content-Type": "application/json"}`)
 
 	send()
 
 	// Выводим результаты
 	fmt.Printf("Responses count: %d\n", len(res))
-	for i, response := range res {
-		fmt.Printf("Response %d: Status Code %d, Body: %s\n", i+1, response.statusCode, response.body)
-		fmt.Println(response.headers)
+	for _, response := range res {
+		fmt.Printf("Response %d: json: %s\n", response.Id, response.get_json())
+		fmt.Println(response.Headers)
 	}
 }
